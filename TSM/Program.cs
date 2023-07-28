@@ -1,3 +1,5 @@
+using NLog.Web;
+using TMS.Api.Middleware;
 using TMS.Api.Repositories;
 using TSM.Repositories;
 using TSM.Services;
@@ -16,6 +18,16 @@ builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSingleton<ITestService,TestService>();
 
+//Insert dependency injection for Logger
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
+
+
+
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,8 +36,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

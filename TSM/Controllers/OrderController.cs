@@ -27,23 +27,23 @@ namespace TMS.Api.Controllers
         {
             var orders = _orderRepository.GetAll();
 
-          /*  var dtoOrders = orders.Select(e => new OrderDto()
-            {
-                OrderId = e.OrderId,
-                customerID = e.CustomerId,
-                OrderedAt = e.OrderedAt,
-                NumberOfTickets = e.NumberOfTickets,
-                TotalPrice = e.TotalPrice
-            });
-*/
-          var dtoOrders= _mapper.Map<List<OrderDto>>(orders);
+            /*  var dtoOrders = orders.Select(e => new OrderDto()
+              {
+                  OrderId = e.OrderId,
+                  customerID = e.CustomerId,
+                  OrderedAt = e.OrderedAt,
+                  NumberOfTickets = e.NumberOfTickets,
+                  TotalPrice = e.TotalPrice
+              });
+  */
+            var dtoOrders = _mapper.Map<List<OrderDto>>(orders);
             return Ok(dtoOrders);
         }
 
         [HttpGet]
-        public ActionResult<OrderDto> GetById(int id)
+        public async Task<ActionResult<OrderDto>> GetById(int id)
         {
-            Order result = _orderRepository.GetById(id);
+            Order result = await _orderRepository.GetById(id);
             if (result == null)
             {
                 return NotFound();
@@ -60,10 +60,10 @@ namespace TMS.Api.Controllers
             return Ok(dtoOrder);
         }
         [HttpPatch]
-        public ActionResult<OrderPatchDto> Patch(OrderPatchDto orderPatch)
+        public async Task<ActionResult<OrderPatchDto>> Patch(OrderPatchDto orderPatch)
         {
             // var eventEntity = await _eventRepository.GetById(eventPatch.EventId);
-            var orderEntity = _orderRepository.GetById(orderPatch.OrderID);
+            var orderEntity = await _orderRepository.GetById(orderPatch.OrderID);
 
             if (orderEntity == null)
             {
@@ -77,7 +77,7 @@ namespace TMS.Api.Controllers
         [HttpDelete]
         public async Task<ActionResult<OrderPatchDto>> Delete(int id)
         {
-            var orderEntity = _orderRepository.GetById(id);
+            var orderEntity = await _orderRepository.GetById(id);
             if (orderEntity == null)
             {
                 return NotFound();
@@ -85,6 +85,7 @@ namespace TMS.Api.Controllers
             _orderRepository.Delete(orderEntity);
             return NoContent();
         }
+
 
 
 

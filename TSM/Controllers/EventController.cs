@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using TMS.Api.Repositories;
 using TSM.Models;
 using TSM.Models.Dto;
 using TSM.Repositories;
@@ -15,10 +16,12 @@ namespace TMS.Api.Controllers
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
-        public EventController(IEventRepository eventRepository, IMapper mapper)
+        private readonly ILogger _logger;
+        public EventController(IEventRepository eventRepository, IMapper mapper,ILogger<EventController> logger )
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
+            _logger = logger;//C:\temp
         }
 
         [HttpGet]
@@ -41,34 +44,40 @@ namespace TMS.Api.Controllers
 
 
         [HttpGet]
-        public ActionResult<EventDto> GetById(int id)
+        public  async Task<ActionResult<EventDto>> GetById(int id)
         {
-            Event result = _eventRepository.GetById(id);
+            try {
+                Event result = await _eventRepository.GetById(id);
 
-            if (result == null)
+                if (result == null)
+                {
+                    throw new Exception("Nu exista in baza de date");
+                }
+
+                //var dtoEvent = new EventDto()
+                //{
+                //    EventId = result.EventId,
+                //    EventDescription = result.EventDescription,
+                //    EventName = result.EventName,
+                //    EventType = result.EventType?.EventTypeName ?? string.Empty,
+                //    Venue = result.Venue?.LocationName ?? string.Empty
+                //};                                          // Astea 2 sunt 
+                var eventDto = _mapper.Map<EventDto>(result);  // 
+
+                return Ok(eventDto);
+            } catch(Exception ex)
             {
-                return NotFound();
+                _logger.LogError(ex, ex.Message);
+                return BadRequest(ex.Message);
             }
-
-            //var dtoEvent = new EventDto()
-            //{
-            //    EventId = result.EventId,
-            //    EventDescription = result.EventDescription,
-            //    EventName = result.EventName,
-            //    EventType = result.EventType?.EventTypeName ?? string.Empty,
-            //    Venue = result.Venue?.LocationName ?? string.Empty
-            //};                                          // Astea 2 sunt 
-            var eventDto=_mapper.Map<EventDto>(result);  // 
-            
-            return Ok(eventDto);
         }
 
 
         [HttpPatch]
-        public ActionResult<EventPatchDto> Patch(EventPatchDto eventPatch)
+        public async Task<ActionResult<EventPatchDto>> Patch(EventPatchDto eventPatch)
         {
             // var eventEntity = await _eventRepository.GetById(eventPatch.EventId);
-            var eventEntity = _eventRepository.GetById(eventPatch.EventId);
+            var eventEntity = await _eventRepository.GetById(eventPatch.EventId);
 
             if (eventEntity == null)
             {
@@ -82,12 +91,12 @@ namespace TMS.Api.Controllers
         [HttpDelete]
         public async Task<ActionResult<EventPatchDto>> Delete(int id)
         {
-            var eventEntity =  _eventRepository.GetById(id);
+            var eventEntity = await _eventRepository.GetById(id);
             if (eventEntity == null)
             {
                 return NotFound();
             }
-            _eventRepository.Delete(eventEntity);
+            _eventRepository.Delete( eventEntity);
             return NoContent();
         }
 

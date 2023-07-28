@@ -33,11 +33,11 @@ namespace TMS.Api.Repositories
             return Orders;
         }
 
-        public Order GetById(int id)
+        public async Task<Order> GetById(int id)
         {
             //var result =  _dbContext.Orders.Where(e => e.OrderId == id).FirstOrDefaultAsync();
-            var result = _dbContext.Orders
-                .Where(e => e.OrderId == id).FirstOrDefault();
+            var result = await _dbContext.Orders
+                .Where(e => e.OrderId == id).FirstOrDefaultAsync();
                 //.Include(e => e.TicketCategory).Include(e => e.TicketCategory.Description)
                 //.FirstOrDefault();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using TMS.Api.Exceptions;
 using TSM.Models;
 using TSM.Repositories;
 
@@ -33,24 +34,28 @@ namespace TMS.Api.Repositories
             return events;
         }
 
-        public Event GetById(int id)
+        public async Task <Event> GetById(int id)
         {
-            //var result = await _dbContext.Events.Where(e => e.EventId == id).FirstOrDefaultAsync();
-            var result = _dbContext.Events
+            var result = await _dbContext.Events
+                .Where(e => e.EventId == id)
+                .Include(e => e.Venue)
+                .Include(e => e.EventType)
+                .FirstOrDefaultAsync();
+          /*  var result = _dbContext.Events
                 .Where(e => e.EventId == id)
                 .Include(e => e.Venue)
                 .Include(e => e.EventType)
                 .FirstOrDefault();
-
+            */
             if (result == null) {
-                throw new Exception("The object was not found!");
+                throw new EntityNotFoundException(id,nameof(Event));
                     } 
             return result;
         }
 
         public void Update(Event @event)
         {
-           _dbContext.Entry(@event).State=EntityState.Modified;
+           _dbContext.Entry(@event).State= EntityState.Modified;
             _dbContext.SaveChanges();
         }
     }
